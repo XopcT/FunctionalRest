@@ -19,6 +19,8 @@ namespace FunctionalRest.RestSharp
 
         public bool GetSuccess() => this.original.IsSuccessful;
 
+        public Exception GetException() => this.original.ErrorException;
+
         private readonly IRestResponse<TData> original = null;
     }
 }

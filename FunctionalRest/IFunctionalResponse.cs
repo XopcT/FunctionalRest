@@ -1,11 +1,13 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 
 namespace FunctionalRest
 {
     public interface IFunctionalResponse<TData>
     {
-        public bool GetSuccess();
-        public HttpStatusCode GetCode();
-        public TData GetData();        
+        bool GetSuccess();
+        HttpStatusCode GetCode();
+        TData GetData();
+        Exception GetException();
     }
 }

@@ -15,7 +15,7 @@ namespace FunctionalRest
 
         void AddFile(string name, string fileName, string contentType, long contentLength, Action<Stream> data);
 
-        Task<IFunctionalResponse<TData>> ExecuteAsync<TData>(CancellationToken cancellationToken);
+        Task<IFunctionalResponse<TData>> GetResponseAsync<TData>(CancellationToken cancellationToken);
 
         Task<byte[]> DownloadAsync(CancellationToken cancellationToken);
     }

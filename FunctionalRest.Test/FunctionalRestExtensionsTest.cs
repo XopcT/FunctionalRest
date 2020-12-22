@@ -2,6 +2,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace FunctionalRest.Test
 {
@@ -41,5 +43,38 @@ namespace FunctionalRest.Test
             handler.Verify(x => x.AddFile("aaa", "bbb", "image/jpeg", 123, It.IsAny<Action<Stream>>()), Times.Once());
         }
 
+        [TestMethod()]
+        public async Task ExecuteAsyncShouldCallOnSuccessMethodWhenResultIsOk()
+        {
+            var response = new Mock<IFunctionalResponse<int>>();
+            response.Setup(x => x.GetSuccess()).Returns(true);
+            response.Setup(x => x.GetData()).Returns(4);
+            var handler = new Mock<IClientRequestHandler>();
+            handler.Setup(x => x.GetResponseAsync<int>(It.IsAny<CancellationToken>())).ReturnsAsync(response.Object);
+
+            var onSuccessCalled = false;
+            var onErrorCalled = false;
+            var result = await handler.Object.ExecuteAsync<int, int>(onSuccess: x => { onSuccessCalled = true; return x.GetData(); },
+                onError: x => { onErrorCalled = true; }, CancellationToken.None);
+            Assert.AreEqual(4, result);
+            Assert.IsTrue(onSuccessCalled);
+            Assert.IsFalse(onErrorCalled);
+        }
+
+        [TestMethod()]
+        public async Task ExecuteAsyncShouldCallOnErrorMethodWhenResultContainsErxception()
+        {
+            var response = new Mock<IFunctionalResponse<int>>();
+            response.Setup(x => x.GetSuccess()).Returns(false);
+            var handler = new Mock<IClientRequestHandler>();
+            handler.Setup(x => x.GetResponseAsync<int>(It.IsAny<CancellationToken>())).ReturnsAsync(response.Object);
+
+            var onSuccessCalled = false;
+            var onErrorCalled = false;
+            await handler.Object.ExecuteAsync<int, int>(onSuccess: x => { onSuccessCalled = true; return x.GetData(); },
+                onError: x => { onErrorCalled = true; }, CancellationToken.None);
+            Assert.IsFalse(onSuccessCalled);
+            Assert.IsTrue(onErrorCalled);
+        }
     }
 }

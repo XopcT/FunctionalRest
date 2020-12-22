@@ -1,5 +1,5 @@
 # FunctionalRest
-Have you ever been bored when writing long and bulky request in RestSharp?
+Have you ever been bored when writing long and bulky request in HttpClient or RestSharp?
 ```
 var client = new RestClient(endpoint);
 client.UseSerializer(() => new NewtonsoftJsonSerializer());
@@ -22,6 +22,9 @@ new RestClient(endpoint)
    .WithJwtAuthentication(accessToken)
    .WithHeader("your header", "Hello world!")
    .WithJsonBody(data)
-   .ExecuteAsync(cancellationToken);
+   .ExecuteAsync(onError: e => { throw new ... });
 ```
 Much easier, right?
+Works with [RestSharp](https://www.nuget.org/packages/FunctionalRest.RestSharp)
+Will work with HttpClient soon
+Don't hesitate to download **FunctionalRest** [from NuGet!](https://www.nuget.org/packages/FunctionalRest)

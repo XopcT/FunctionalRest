@@ -29,7 +29,7 @@ namespace FunctionalRest.RestSharp
             this.Request.AddFile(name, data, fileName, contentLength, contentType);
         }
 
-        public virtual async Task<IFunctionalResponse<TData>> ExecuteAsync<TData>(CancellationToken cancellationToken)
+        public virtual async Task<IFunctionalResponse<TData>> GetResponseAsync<TData>(CancellationToken cancellationToken)
         {
             var response = await this.Client.ExecuteAsync<TData>(this.Request, cancellationToken);
             return new RestSharpResponse<TData>(response);

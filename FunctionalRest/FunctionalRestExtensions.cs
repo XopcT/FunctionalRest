@@ -47,14 +47,53 @@ namespace FunctionalRest
             return h;
         }
 
-        public static Task<IFunctionalResponse<TData>> ExecuteAsync<TData>(this IClientRequestHandler h)
-            => h.ExecuteAsync<TData>(CancellationToken.None);
+        public static async Task<TData> ExecuteAsync<TResponseData, TData>(this IClientRequestHandler h,
+            Func<IFunctionalResponse<TResponseData>, TData> onSuccess,
+            Action<IFunctionalResponse<TResponseData>> onError,
+            CancellationToken cancellationToken = default)
+        {
+            var response = await h.GetResponseAsync<TResponseData>(cancellationToken);
+            if (response.GetSuccess())
+            {
+                return onSuccess(response);
+            }
+            else
+            {
+                onError(response);
+                return default;
+            }
+        }
 
-        public static Task<IFunctionalResponse<object>> ExecuteAsync(this IClientRequestHandler h, CancellationToken cancellationToken)
-            => h.ExecuteAsync<object>(cancellationToken);
+        public static Task<TData> ExecuteAsync<TResponseData, TData>(this IClientRequestHandler h,
+            Func<IFunctionalResponse<TResponseData>, TData> onSuccess,
+            CancellationToken cancellationToken = default)
+            => h.ExecuteAsync<TResponseData, TData>(onSuccess, x => { throw x.GetException(); }, cancellationToken);
 
-        public static Task<IFunctionalResponse<object>> ExecuteAsync(this IClientRequestHandler h)
-            => h.ExecuteAsync<object>(CancellationToken.None);
+        public static Task<TData> ExecuteAsync<TData>(this IClientRequestHandler h,
+            Func<IFunctionalResponse<TData>, TData> onSuccess,
+            CancellationToken cancellationToken = default)
+            => h.ExecuteAsync<TData, TData>(onSuccess, x => { throw x.GetException(); }, cancellationToken);
+
+        public static Task<TResponseData> ExecuteAsync<TResponseData>(this IClientRequestHandler h,
+            Action<IFunctionalResponse<TResponseData>> onError,
+            CancellationToken cancellationToken = default)
+            => h.ExecuteAsync<TResponseData, TResponseData>(x => x.GetData(), onError, cancellationToken);
+        
+        public static Task<TData> ExecuteAsync<TData>(this IClientRequestHandler h, CancellationToken cancellationToken = default)
+            => h.ExecuteAsync<TData, TData>(onSuccess: x => x.GetData(), onError: x => { throw x.GetException(); }, cancellationToken);
+
+        public static Task ExecuteAsync(this IClientRequestHandler h,
+            Func<IFunctionalResponse<object>, object> onSuccess,
+            Action<IFunctionalResponse<object>> onError,
+            CancellationToken cancellationToken = default)
+            => h.ExecuteAsync<object, object>(onSuccess, onError, cancellationToken);
+
+        public static Task ExecuteAsync(this IClientRequestHandler h,
+            Func<IFunctionalResponse<object>, object> onSuccess, CancellationToken cancellationToken = default)
+            => h.ExecuteAsync<object, object>(onSuccess, x => { throw x.GetException(); }, cancellationToken);
+
+        public static Task ExecuteAsync(this IClientRequestHandler h, CancellationToken cancellationToken = default)
+            => h.ExecuteAsync<object, object>(x => null, x => { throw x.GetException(); }, cancellationToken);
 
     }
 }
